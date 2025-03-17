@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "frontendM",
     "name": "frontendM",
     "slug": "frontendM",
     "version": "1.0.0",
