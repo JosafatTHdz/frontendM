@@ -13,7 +13,11 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         await login({ email, password })
-    };
+    }
+
+    const handleGoBack = async () => {
+        router.back()
+    }
 
     return (
         <View style={styles.container}>
@@ -46,6 +50,10 @@ export default function LoginScreen() {
 
             <TouchableOpacity onPress={() => router.push("/register")}>
                 <Text style={styles.link}>¿No tienes cuenta? Regístrate</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.btnBack} onPress={handleGoBack}>
+                <Text style={styles.btnBackText}>Volver</Text>
             </TouchableOpacity>
         </View>
     );

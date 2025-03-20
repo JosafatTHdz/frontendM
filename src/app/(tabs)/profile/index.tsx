@@ -8,8 +8,6 @@ export default function ProfileScreen() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
 
-    console.log("👤 User:", user)
-
     const handleLogout = async () => {
         setLoading(true)
         await logout()
@@ -43,17 +41,30 @@ export default function ProfileScreen() {
             {loading ? (
                 <ActivityIndicator size="large" color="#e74c3c" style={{ marginTop: 20 }} />
             ) : (
-                <TouchableOpacity
-                    onPress={handleLogout}
-                    style={{
-                        marginTop: 20,
-                        padding: 10,
-                        backgroundColor: "#e74c3c",
-                        borderRadius: 8,
-                    }}
-                >
-                    <Text style={{ color: "#fff", fontWeight: "bold" }}>Cerrar Sesión</Text>
-                </TouchableOpacity>
+                <View>
+                    <TouchableOpacity
+                        onPress={handleLogout}
+                        style={{
+                            marginTop: 20,
+                            padding: 10,
+                            backgroundColor: "#e74c3c",
+                            borderRadius: 8,
+                        }}
+                    >
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>Cerrar Sesión</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => router.push("/profile/edit")}
+                        style={{
+                            marginTop: 20,
+                            padding: 10,
+                            backgroundColor: "#2ecc71",
+                            borderRadius: 8,
+                        }}
+                    >
+                        <Text>Editar Perfil</Text>
+                    </TouchableOpacity>
+                </View>
             )}
         </View>
     )

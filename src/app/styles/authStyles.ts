@@ -42,4 +42,16 @@ export default StyleSheet.create({
         color: "#007BFF",
         marginTop: 10,
     },
+    btnBack: {
+        borderColor: '#007AFF',
+        borderWidth: 1,
+        padding: 16,
+        borderRadius: 8,
+        marginTop: 10,
+      },
+    btnBackText: {
+        color: '#007AFF',
+        fontWeight: 'bold',
+        textAlign: 'center',
+      },
 });
