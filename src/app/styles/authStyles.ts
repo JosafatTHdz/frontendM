@@ -15,13 +15,14 @@ export default StyleSheet.create({
         marginBottom: 20,
     },
     input: {
-        width: "90%",
-        padding: 12,
-        marginBottom: 15,
-        borderRadius: 8,
+        height: 48,
+        borderColor: "#ccc",
         borderWidth: 1,
-        borderColor: "#CCC",
-        backgroundColor: "#FFF",
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        marginBottom: 16,
+        backgroundColor: "#fff",
+        fontSize: 16,
     },
     button: {
         backgroundColor: "#007BFF",
@@ -54,4 +55,16 @@ export default StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
       },
+      passwordWrapper: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderColor: "#ccc",
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 8,
+        backgroundColor: "#fff",
+        height: 48, // ✅ igual que el input
+        marginBottom: 16, // para mantener separación
+      }
+      
 });
