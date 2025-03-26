@@ -10,6 +10,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native'
+import { io } from "socket.io-client"
 
 // Interfaz para los datos que recibes de /iot/realtime
 interface RealtimeData {
@@ -101,20 +102,21 @@ export default function ControlCuna() {
   // Cargar datos de /iot/realtime cada 5s
   useEffect(() => {
     let interval: NodeJS.Timeout
-
+  
     const fetchRealtimeData = async () => {
       try {
         setError(false)
-        // Obtén el token para autorización
         const token = await AsyncStorage.getItem('token')
-        const res = await fetch(`${process.env.API_URL}iot/realtime/${deviceId}`, { //agregar / porque no se actualizaba la variable de entorno
+        const res = await fetch(`${process.env.API_URL}/iot/realtime/${deviceId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
         })
         const json = await res.json()
-        setData(json) // { temperature, humidity, obstaculo }
+        setEstadoMotor(json.balanceoActivo)
+        setEstadoCarrusel(json.carruselActivo)
+        setData(json)
       } catch (err) {
         console.error('Error en fetchRealtimeData:', err)
         setError(true)
@@ -122,17 +124,32 @@ export default function ControlCuna() {
         setLoading(false)
       }
     }
-
+  
+    // 🔹 Fetch inicial
     fetchRealtimeData()
-
-    // Refresca cada 5s
-    interval = setInterval(() => {
-      fetchRealtimeData()
-    }, 5000)
-
-    // Limpiar el intervalo al desmontar
-    return () => clearInterval(interval)
+  
+    // 🔹 Socket para escuchar actualizaciones en tiempo real
+    const socket = io(`${process.env.API_URL}`, {
+      transports: ['websocket'],
+      autoConnect: true,
+    })
+  
+    socket.on('realtime-update', (update) => {
+      if (update.deviceId === deviceId) {
+        console.log('📡 Actualización en tiempo real:', update)
+        setData(update)
+      }
+    })
+  
+    // 🔄 Refrescar cada 5s por seguridad
+    interval = setInterval(fetchRealtimeData, 5000)
+  
+    return () => {
+      clearInterval(interval)
+      socket.disconnect()
+    }
   }, [])
+  
 
   if (loading) {
     return (
