@@ -11,12 +11,21 @@ import { Category } from '../../../types/category'
 const PRODUCTS_PER_PAGE = 10
 
 const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array]
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-            ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-    }
-    return shuffled
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+const productoEstrella = {
+  _id: 'estrella-001',
+  name: 'Cuna Inteligente BabyDreams',
+  description: 'Una cuna automatizada con sensores, carrusel y control por app.',
+  image: 'https://res.cloudinary.com/josafat/image/upload/v1743039356/crib_jv2lrn.jpg',
+  category: '',
+  price: 4999.99,
 }
 
 export default function Home() {
@@ -34,7 +43,7 @@ export default function Home() {
     try {
       setLoading(true)
       setError(false)
-      const response = await fetch(`${process.env.API_URL}product`) // la fokin /
+      const response = await fetch(`${process.env.API_URL}/product`)
       const data: Product[] = await response.json()
       const ramdomized = shuffleArray(data)
       setProducts(ramdomized)
@@ -47,7 +56,7 @@ export default function Home() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${process.env.API_URL}product/category`)
+      const response = await fetch(`${process.env.API_URL}/product/category`)
       const data: Category[] = await response.json()
       setCategories(data)
     } catch (err) {
@@ -62,7 +71,6 @@ export default function Home() {
 
   const categoryMap = new Map(categories.map(cat => [cat._id, cat.name]))
 
-  // 🔍 Filtrar por categoría si se ha seleccionado una
   const filteredProducts = selectedCategory === 'all'
     ? products
     : products.filter(p => p.category === selectedCategory)
@@ -103,58 +111,68 @@ export default function Home() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* 🔽 Selector de categoría */}
-      <Text style={styles.label}>Filtrar por categoría:</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          selectedValue={selectedCategory}
-          onValueChange={(value) => {
-            setSelectedCategory(value)
-            setCurrentPage(1) // reinicia paginación
-          }}
-          style={styles.picker}
-        >
-          <Picker.Item label="Todas" value="all" />
-          {categories.map(cat => (
-            <Picker.Item key={cat._id} label={cat.name} value={cat._id} />
-          ))}
-        </Picker>
-      </View>
+    <FlatList
+      ListHeaderComponent={
+        <View>
+          {/* Producto Estrella */}
+          <Text style={styles.featuredTitle}>🌟 Oferta Destacada</Text>
+          <TouchableOpacity onPress={() => router.push(`/home/crib`)} style={styles.featuredCard}>
+            <Image source={{ uri: productoEstrella.image }} style={styles.featuredImage} />
+            <Text style={styles.featuredName}>{productoEstrella.name}</Text>
+            <Text style={styles.featuredDesc}>{productoEstrella.description}</Text>
+            <Text style={styles.featuredPrice}>${productoEstrella.price.toFixed(2)} MXN</Text>
+            <Text style={styles.featuredCTA}>Ver Detalles →</Text>
+          </TouchableOpacity>
 
-      <Text style={styles.header}>🛒 Productos Disponibles</Text>
+          {/* Filtro */}
+          <Text style={styles.label}>Filtrar por categoría:</Text>
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={selectedCategory}
+              onValueChange={(value) => {
+                setSelectedCategory(value)
+                setCurrentPage(1)
+              }}
+              style={styles.picker}
+            >
+              <Picker.Item label="Todas" value="all" />
+              {categories.map(cat => (
+                <Picker.Item key={cat._id} label={cat.name} value={cat._id} />
+              ))}
+            </Picker>
+          </View>
 
-      {/* 🛍 Lista de productos */}
-      <FlatList
-        data={currentProducts}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.listContent}
-      />
+          <Text style={styles.header}>🛒 Productos Disponibles</Text>
+        </View>
+      }
+      data={currentProducts}
+      keyExtractor={(item) => item._id}
+      renderItem={renderItem}
+      numColumns={2}
+      columnWrapperStyle={styles.row}
+      contentContainerStyle={styles.listContent}
+      ListFooterComponent={
+        <View style={styles.pagination}>
+          <TouchableOpacity
+            onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            style={[styles.pageBtn, currentPage === 1 && styles.disabledBtn]}
+          >
+            <Text style={styles.pageText}>Anterior</Text>
+          </TouchableOpacity>
 
-      {/* ⬅️➡️ Paginación al final */}
-      <View style={styles.pagination}>
-        <TouchableOpacity
-          onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          style={[styles.pageBtn, currentPage === 1 && styles.disabledBtn]}
-        >
-          <Text style={styles.pageText}>Anterior</Text>
-        </TouchableOpacity>
+          <Text style={styles.pageIndicator}>{currentPage} / {totalPages}</Text>
 
-        <Text style={styles.pageIndicator}>{currentPage} / {totalPages}</Text>
-
-        <TouchableOpacity
-          onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          style={[styles.pageBtn, currentPage === totalPages && styles.disabledBtn]}
-        >
-          <Text style={styles.pageText}>Siguiente</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          <TouchableOpacity
+            onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            style={[styles.pageBtn, currentPage === totalPages && styles.disabledBtn]}
+          >
+            <Text style={styles.pageText}>Siguiente</Text>
+          </TouchableOpacity>
+        </View>
+      }
+    />
   )
 }
 
@@ -169,6 +187,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 4,
     color: '#4A5568',
+    marginTop: 20,
+    paddingHorizontal: 4
   },
   pickerWrapper: {
     borderWidth: 1,
@@ -191,16 +211,17 @@ const styles = StyleSheet.create({
   row: {
     justifyContent: 'space-between',
     marginBottom: 12,
+    gap: 10
   },
   listContent: {
     paddingBottom: 16,
+    paddingHorizontal: 4,
   },
   card: {
     backgroundColor: '#FFFFFF',
     flex: 1,
     borderRadius: 12,
     padding: 12,
-    marginHorizontal: 4,
     marginBottom: 12,
     alignItems: 'center',
     shadowColor: '#000',
@@ -258,15 +279,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '600',
   },
-  arrow: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#4A90E2',
-    paddingHorizontal: 12,
-  },
-  disabledArrow: {
-    color: '#A0AEC0',
-  },
   pageIndicator: {
     fontSize: 16,
     fontWeight: '500',
@@ -286,5 +298,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#E53E3E',
   },
-  
+  featuredTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 10,
+    color: '#2B6CB0',
+  },
+  featuredCard: {
+    backgroundColor: '#EDF2F7',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  featuredImage: {
+    width: 160,
+    height: 160,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  featuredName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2D3748',
+    textAlign: 'center',
+  },
+  featuredDesc: {
+    fontSize: 14,
+    color: '#4A5568',
+    textAlign: 'center',
+    marginVertical: 6,
+  },
+  featuredPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#38A169',
+    marginBottom: 6,
+  },
+  featuredCTA: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3182CE',
+  },
 })

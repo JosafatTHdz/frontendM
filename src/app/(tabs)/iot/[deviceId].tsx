@@ -39,29 +39,46 @@ const TarjetaControl = ({
   setEstado,
   endPointApi,
 }: TarjetaControlProps) => {
-  // Función que enciende/apaga y hace POST a tu backend
+  const deviceId = useLocalSearchParams().deviceId;
+  const [cargando, setCargando] = useState(false)
+  const [mensaje, setMensaje] = useState("")
   const alternarSwitch = async (value: boolean) => {
-    setEstado(value) // Cambia el estado local para el switch e imagen
+    setCargando(true)
+    setMensaje(value ? "Encendiendo..." : "Apagando...")
     try {
-      // Obtén el token desde AsyncStorage
-      const token = await AsyncStorage.getItem('token')
-      // Ajusta el URL base según tu entorno; asegúrate de que no tenga espacios
+      const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${process.env.API_URL}${endPointApi}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ estado: value }),
-      })
-      if (!res.ok) {
-        throw new Error(`Error al cambiar estado. Status: ${res.status}`)
-      }
-      console.log(`Estado de "${titulo}" cambiado a:`, value)
+      });
+  
+      if (!res.ok) throw new Error("Error en backend");
+  
+      console.log(`✅ Estado confirmado: ${value}`);
+  
+      const id = deviceId?.toString();
+      const confirm = await fetch(`${process.env.API_URL}/iot/realtime/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const latest = await confirm.json();
+      const final = endPointApi.includes("balanceo")
+        ? latest.balanceoActivo
+        : latest.carruselActivo;
+  
+      setEstado(final); // 💡 Solo actualizar si se refleja realmente
+      setTimeout(() => setCargando(false), 3300)
     } catch (error) {
-      console.error(`Error cambiando estado de ${titulo}:`, error)
+      console.error("Error sincronizando estado:", error);
     }
-  }
+  };
+  
 
   return (
     <View style={styles.card}>
@@ -80,8 +97,8 @@ const TarjetaControl = ({
         thumbColor={estado ? '#f5dd4b' : '#f4f3f4'}
       />
 
-      <Text style={[styles.estadoText, { color: estado ? 'green' : 'red' }]}>
-        {estado ? 'Encendido' : 'Apagado'}
+      <Text style={[styles.estadoText, { color: cargando ? "#007AFF" : (estado ? 'green' : 'red') }]}>
+        {cargando ? mensaje : (estado ? "Encendido" : 'Apagado')}
       </Text>
     </View>
   )
@@ -142,7 +159,7 @@ export default function ControlCuna() {
     })
   
     // 🔄 Refrescar cada 5s por seguridad
-    interval = setInterval(fetchRealtimeData, 5000)
+    interval = setInterval(fetchRealtimeData, 2100)
   
     return () => {
       clearInterval(interval)
