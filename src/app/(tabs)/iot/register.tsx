@@ -63,7 +63,7 @@ export default function RegisterDeviceScreen() {
         <Text style={styles.buttonText}>Registrar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.back()} style={styles.secondaryButton}>
+      <TouchableOpacity onPress={() => router.navigate('/iot')} style={styles.secondaryButton}>
         <Text style={styles.secondaryButtonText}>← Volver</Text>
       </TouchableOpacity>
     </View>
